@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>WINE WINDOWS</title>
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root{
+      --bg-soft:#ffb46e;  
+      --radius:8px;  
+      --shadow:0 4px 20px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      line-height:1.65;
+      background:#030303;
+      color:#ffb46e;
+      text-align:center;
+    }
+    h1,h2{
+      font-family:'Playfair Display',serif;
+      text-align:center;
+      margin:clamp(3rem,6vw,5rem) auto 1rem;
+      max-width:80%;
+    }
+    h1{font-size: clamp(2.2rem, 4vw + 0.6rem, 4.2rem);line-height: 1.1;}
+    h2{font-weight:300;font-size:clamp(1.25rem,2vw+.5rem,1.75rem);color:#b98c70;margin-top:0;}
+    .byline{text-align:center;margin:-0.5rem auto 2.5rem;font-size:1rem;font-style:italic;color:#b98c70;}
+
+    p{max-width:32rem;margin:0 auto 2rem;font-size:clamp(1rem,.6vw+.9rem,1.125rem);text-align:justify;}
+
+    .hero {
+     display: block;
+      width: 100%;
+      height: 100%; 
+      max-height: 50vh;
+      object-fit: cover;
+      object-position: 70% 70%; 
+      box-shadow: var(--shadow);
+    }
+
+    .caption {
+      color: #b98c70;
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      text-align: center;
+      font-style: italic;
+    }
+
+    /* --- sezioni scrolly -------------------------------------------------- */
+    #video-scrolly,
+    #scrolly{
+      position:relative;
+      padding:1rem;
+    }
+
+    /* sticky area (video o immagine) */
+    .sticky-thing{
+      position:sticky;
+      top:0;
+      width:100%;
+      height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:#000;
+      z-index:0;
+    }
+
+    /* elemento multimediale */
+    .videoDiv,
+    .photoDiv{
+      width:49%;
+      margin:0 auto;                 /* 🔶 centrato orizzontalmente */
+      border-radius:var(--radius);
+    }
+
+    /* video leggermente ridotto per non toccare i bordi */
+    video.videoDiv{
+      width:80%;                     /* 🔶 80 % invece di 100 % */
+      height:auto;
+      position:relative;
+    }
+
+    /* Mute button */
+    .mute-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 180, 110, 0.9);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      z-index: 10;
+      transition: background 0.3s ease;
+    }
+
+    .mute-button:hover {
+      background: rgba(255, 180, 110, 1);
+    }
+
+    /* colonna di testo */
+    .scrolly-overlay{
+      position:relative;
+      max-width: 20rem;
+      margin-left:auto;
+      margin-right:auto;
+      pointer-events:none;
+      counter-reset:step;
+      text-align:center;
+    }
+
+    /* singola card di step */
+    .step{
+      counter-increment:step;
+      margin: 0 0 25rem;             /* 🔶 più spazio → resta visibile più a lungo */
+      width:100%;                    /* 🔶 riempie tutta la colonna flex */
+      background: var(--bg-soft);
+      color:#1a1a1a;  /* Dark color for contrast */
+      text-align:center;
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      opacity:0;
+      transform:translateY(40px);
+      transition:opacity .6s ease, transform .6s ease;
+      pointer-events:auto;
+    }
+
+    .step p{
+      padding:1rem;
+      text-align:center;
+      font-size:1rem;
+      margin:0;
+      font-style:italic;             /* 🔶 testo in corsivo */
+    }
+
+    /* stato attivo - PERMANENTE */
+    .step.is-active{
+      opacity:1;
+      transform:none;
+    }
+
+    #scrolly .photoDiv{
+      /* existing properties... */
+      transform: translateX(-50px); /* Move left */
+      /* or */
+      transform: translateX(-25px); /* Move right */
+    }
+
+    /* sezione mappe: immagine fullscreen */
+    #scrolly .sticky-thing{
+      background:none;
+      align-items:center;  /* Center vertically */
+    }
+    #scrolly .photoDiv{
+      width:80%;  /* Scaled down for harmony */
+      height:auto;
+      max-height:80vh;
+      object-fit:contain;
+      border-radius:var(--radius);  /* Rounded like video */
+      margin:0 auto 1rem;  /* Added bottom margin like other images */
+    }
+
+    img{max-width:100%;display:block;border-radius:var(--radius);}
+
+    @media(min-width:700px){
+      #video-scrolly.side-by-side,#scrolly.side-by-side{display:flex;}
+      #video-scrolly.side-by-side>div,#scrolly.side-by-side>div{flex-basis:0;flex-grow:1;flex-shrink:1;padding:0.75em;}
+      #video-scrolly.side-by-side .scrolly-overlay,#scrolly.side-by-side .scrolly-overlay{margin-top:70vh;order:0;min-width:15rem;max-width:20rem;}
+      #video-scrolly.side-by-side .sticky-thing,#scrolly.side-by-side .sticky-thing{order:1;flex-grow:2;}
+    }
+
+    @media(max-width:699px){
+      .videoDiv,.photoDiv{width:100%;margin:0;border-radius:var(--radius);}
+      .step{margin-bottom:18rem;}
+      
+      /* Mobile responsiveness */
+      h1{font-size: clamp(1.8rem, 6vw, 3rem); line-height: 1.2;}
+      h2{font-size: clamp(1rem, 4vw, 1.5rem);}
+      p{font-size: clamp(0.9rem, 3vw, 1rem); padding: 0 1rem; text-align: left;}
+      
+      .hero{max-height: 40vh;}
+      
+      /* Video section mobile */
+      #video-scrolly .sticky-thing{height: 60vh;}
+      video.videoDiv{width: 95%; max-height: 50vh;}
+      .mute-button{width: 35px; height: 35px; font-size: 14px; top: 5px; right: 5px;}
+      
+      /* Scrolly sections mobile */
+      #scrolly .sticky-thing{height: 60vh;}
+      #scrolly .photoDiv{width: 95%; max-height: 50vh;}
+      
+      .step{margin-bottom: 20rem; max-width: 90%; margin-left: auto; margin-right: auto;}
+      .step p{font-size: 0.9rem; padding: 0.8rem;}
+    }
+
+    @media(max-width: 480px) and (orientation: landscape){
+      .hero{max-height: 70vh;}
+      #video-scrolly .sticky-thing, #scrolly .sticky-thing{height: 80vh;}
+      video.videoDiv{width: 70%; max-height: 70vh;}
+      #scrolly .photoDiv{width: 70%; max-height: 70vh;}
+      .step{margin-bottom: 15rem;}
+    }
+  </style>
+
+  <script src="https://unpkg.com/intersection-observer@0.5.1/intersection-observer.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/scrollama/3.0.4/scrollama.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.3.0/d3.min.js"></script>
+</head>
+<body>
+  <img class="hero" src="42.jpg" alt="Wine window collage" loading="lazy" />
+
+  <h1>THE TIMELESS MAGIC <br>OF THE WINE WINDOWS</h1>
+  <h2>In Florence small windows serve wine at the perfect moment</h2>
+  <p class="byline">by Annalisa Berti</p>
+
+  <p>You don't need much to make this toast: just be in Florence, keep your eyes open and you're good to go! The Buchette del Vino, or #WINE WINDOWS as they're now known globally, are back in use. They date back to the 17th century, when Florence was a wine-producing hub and noble families owned large vineyard estates. These small arched openings, often framed in stone, were used to sell wine by the flask directly to the public, bypassing taxes and shop-related fees. In addition to direct sales, the wine windows also offered social distancing advantages especially during epidemics like the 1630/1633 plague. And it was in 2020, during the Covid-19 pandemic, that they came back to life: some Florentine businesses started using them again to safely serve coffee, drinks, sandwiches, and gelato.</p>
+
+  <!-- ===== Video Scrolly ===== -->
+  <section id="video-scrolly">
+    <div class="sticky-thing">
+      <video id="storyVideo" class="videoDiv" src="2_video_bianconero.mp4" muted autoplay loop playsinline></video>
+      <button class="mute-button" id="muteBtn" onclick="toggleMute()">🔇</button>
+    </div>
+    <div class="scrolly-overlay">
+      <div class="step" id="vstep1"><p>And today, just like back then, all it takes is a knock and a few seconds before the little door opens. </p></div>
+      <div class="step" id="vstep2"><p>Once it does, you can order a glass of wine and raise a toast right in the streets of Florence.</p></div>
+    </div>
+  </section>
+
+  <p>Throughout history, writers and scholars have referenced these small windows in their letters and texts leaving behind what are now valuable historical testimonies of Florence.</p>
+  <p><em>1634: "The Florentine scholar Francesco Rondinelli discussed the use of "wine windows" during the plague as a way to prevent contagion, in his Report on the Plague (Relazione del contagio)".</em></p>
+  <p><em>1838: "American writer James Fenimore Cooper, known for The Last of the Mohicans, wrote in his travel letters (later published in Excursions in Italy) about his stay in Florence specifically at Palazzo Ricasoli where he noted the peculiarity of a wine window used to sell wine by the flask".</em></p>
+  <p>Even today, many tourists after visiting Florence Cathedral, the Uffizi, and the Vasari Corridor cross Ponte Vecchio in search of a glass of Chianti served through a tiny window. #winewindowsflorence is the hashtag trending on social media, but just how many of these little windows are there in the city?</p>
+  <!-- ===== Image Scrolly ===== -->
+  <section id="scrolly" class="side-by-side"><div class="sticky-thing">
+      <img id="scrollyPhoto" class="photoDiv" src="2.png" alt="Mappa di Firenze">
+    </div>
+    <div class="scrolly-overlay">
+      <div class="step" id="step1"><p>As of today, 177 wine windows have been officially recognized within the City of Florence. Each one is marked with a brass plaque certifying its authenticity, thanks to the work of the Associazione Buchette del Vino. </p></div>
+      <div class="step" id="step2"><p>Most of them are located in the historic center, where noble families once lived and brought their wine into the city to sell from their palaces. </p></div>
+    </div>
+  </section>
+
+
+  <p>These openings were just large enough for a wine flask to pass through, usually shaped like a small arched door and often framed by a decorative stone surround with a teardrop shaped keystone, and closed with a wooden shutter. Their elegant stone frames smooth or rusticated gave them a refined appearance, earning them the nickname "wine tabernacles." Architecturally, they were positioned on the ground floor, easily connected to the cellar, where a servant would handle wine sales during set hours.</p>
+  <figure style="display:block;width:70%;max-width:800px;margin:0 auto 4rem;">
+  <img src="buchetta.jpg" alt=" Wine window in Florenze" style="width: 100%; border-radius: 8px;">
+  <figcaption class="caption"> Wine window in Florenze</figcaption></figure>
+  <p>The wine windows are located in all four historic districts of Florence: San Giovanni, Santa Maria Novella, Santo Spirito, and Santa Croce. The latter holds the record for the highest number of wine windows in the city.</p>
+  
+
+
+ <!-- ===== Image Scrolly ===== -->
+  <section id="scrolly" class="side-by-side"><div class="sticky-thing">
+      <img id="scrollyPhoto2" class="photoDiv" src="4.png" alt="Mappa di Firenze">
+    </div>
+    <div class="scrolly-overlay">
+      <div class="step" id="step3"><p>SANTA MARIA NOVELLA: Developed around the stunning Renaissance basilica, this district has long been a crossroads for travelers and merchants. Its elegant streets exude a cosmopolitan charm, making it one of the city's most dynamic areas, where historic grandeur meets vibrant modern life.</p></div>
+      <div class="step" id="step4"><p>SAN GIOVANNI: The beating heart of Florence, San Giovanni is home to the Duomo and the Baptistery iconic landmarks of the city. It was the epicenter of religious and civic power for centuries, hosting celebrations, revolutions, and historic events. Walking here means stepping directly into the solemn grandeur of the Florentine Renaissance.</p></div>
+      <div class="step" id="step5"><p>SANTA CROCE: Cradle of thinkers, craftsmen, and intellectuals, Santa Croce blends cultural sophistication with a popular spirit. Dominated by the grand Franciscan basilica, the district boasts the highest number of wine windows in Florence a living testament to its enduring traditions.</p></div>
+      <div class="step" id="step6"><p>SANTO SPIRITO: On the left bank of the Arno, Santo Spirito is regarded as the city's most authentic and bohemian neighborhood. Long associated with artisans, artists, and workshop life, it retains a strong and deeply rooted local identity.</p></div>
+    </div>
+  </section>
+
+  <p>The idea to reopen the wine windows came in May 2020, during the lockdown, when the Vivoli gelateria, in the heart of Florence, had the brilliant intuition to start serving coffee, drinks, and gelato safely through its wine window a resounding success! That same month, Vivoli opened its small window and began serving customers, inspiring three other venues to follow suit: Babae on Via Santo Spirito, Osteria delle Brache in Piazza Peruzzi, and Il Latini on Via dei Palchetti.</p>
+  <img src="8.png" style="display:block;width:70%;max-width:800px;margin:1rem auto;" alt="Vivoli gelateria wine window">
+  <p>However, Florentines still call and have called these little holes by different names. The ages have passed, the years have changed Florence, but they, albeit with different names, have remained, simply eternal.</p>
+  <img src="9.png" style="display:block;width:70%;max-width:800px;margin:2rem auto;" alt="Vivoli gelateria wine window">
+  
+  <p>Over the years, the Associazione Culturale Buchette del Vino di Firenze has verified the authenticity of each wine window, certifying them with a brass plaque. These unique openings in the walls of Florentine buildings have gone by many names over the centuries, up to the present day.</p>
+  
+  <figure style="display:block;width:70%;max-width:800px;margin:0 auto 4rem;">
+  <img src="12.jpg" alt="Wine window in Florenze, Babae Restaurant" style="width: 100%; border-radius: 8px;">
+  <figcaption class="caption">Wine window in Florenze, Babae Restaurant</figcaption></figure>
+  
+  <p>But the story doesn't end here for two main reasons: Quantity: The wine windows recorded so far, based on the Tuscany Region's dataset and the work of the Cultural Association, don't represent all of them. Citizens, wine lovers, and enthusiasts continue to report new windows both in Florence and across Tuscany. Reach: Thanks also to social media, wine windows have become famous worldwide. Some entrepreneurs, inspired by the Florentine tradition, have even recreated them abroad such as in New York City's Williamsburg neighborhood, where the venue "Please Tell Me" opened its own wine window a year ago. Even in Times Square, amid lights and billboards, the Florentine tradition meets the fast-paced rhythm of American innovation.</p>
+  
+  <figure style="display:block;width:70%;max-width:800px;margin:0 auto 4rem;">
+  <img src="10.jpg" alt="Wine window in Williamsburg, Brooklyn" style="width: 100%; border-radius: 8px;">
+  <figcaption class="caption">Wine window in Williamsburg, Brooklyn, New York City </figcaption></figure>
+
+  <figure style="display:block;width:70%;max-width:800px;margin:0 auto 4rem;">
+  <img src="11.jpg" alt="Wine window in Time Square, New York City" style="width: 100%; border-radius: 8px;">
+  <figcaption class="caption">Wine window in Time Square, Manhattan, New York City</figcaption></figure>
+  
+  <script>
+    const mapImg={
+      step1:'2.png',
+      step2:'3.png',
+      step3:'4.png',
+      step4:'5.png',
+      step5:'6.png',
+      step6:'7.png'
+    };
+
+    const scroller=scrollama();
+    scroller
+      .setup({step:'#video-scrolly .step, #scrolly .step',offset:0.8})
+      .onStepEnter(({element})=>{
+        element.classList.add('is-active');
+        if(mapImg[element.id]) {
+          if(element.id === 'step1' || element.id === 'step2') {
+            d3.select('#scrollyPhoto').attr('src',mapImg[element.id]);
+          } else {
+            d3.select('#scrollyPhoto2').attr('src',mapImg[element.id]);
+          }
+        }
+      });
+     
+    window.addEventListener('resize', scroller.resize);
+
+    // Mute/unmute functionality
+    function toggleMute() {
+      const video = document.getElementById('storyVideo');
+      const muteBtn = document.getElementById('muteBtn');
+      
+      if (video.muted) {
+        video.muted = false;
+        muteBtn.textContent = '🔊';
+      } else {
+        video.muted = true;
+        muteBtn.textContent = '🔇';
+      }
+    }
+  </script>
+</body>
+</html>
